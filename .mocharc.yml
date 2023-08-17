@@ -1,0 +1,4 @@
+spec: ./spec/**/*.spec.ts
+watch-files:
+  - ./src/**/*.ts
+  - ./spec/**/*.ts

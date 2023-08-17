@@ -1,0 +1,32 @@
+extends:
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+  - prettier
+env:
+  node: true
+  es6: true
+  mocha: true
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2019
+rules:
+  indent: off
+  func-names: [error, never]
+  no-shadow: off
+  no-case-declarations: off
+  no-param-reassign: off
+  comma-dangle: off
+  radix: off
+  consistent-return: off
+  no-prototype-builtins: off
+  no-await-in-loop: off
+  no-use-before-define: off
+  no-restricted-syntax: off
+  no-empty: off
+  no-continue: off
+  require-yield: off
+  '@typescript-eslint/no-explicit-any': off
+  '@typescript-eslint/no-non-null-assertion': off
+  '@typescript-eslint/no-empty-function': off
+  '@typescript-eslint/no-unused-vars': [warn, varsIgnorePattern: ^_]
+  

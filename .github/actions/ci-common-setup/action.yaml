@@ -1,0 +1,31 @@
+name: Common Setup for CI
+description: Reusable common setup for project's CI jobs
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16.14.0'
+
+    - name: Get Node.js Version
+      id: node_version
+      run: |
+        echo "::set-output name=version::$(node -v)"
+      shell: bash
+
+    - name: Install pnpm
+      run: npm install -g pnpm
+      shell: bash
+
+    - name: Restore possibly cached dependencies
+      id: cache-node-modules
+      uses: actions/cache@v2
+      with:
+        path: ./node_modules
+        key: node-modules-${{ runner.os }}-${{ steps.node_version.outputs.version }}-${{ hashFiles('./pnpm-lock.yaml') }}
+
+    - name: Install dependencies if weren't cached
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      run: pnpm install --frozen-lockfile
+      shell: bash
