@@ -16,9 +16,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: ./.github/actions/ci-common-setup
         with:
           node-version: v14 # setting this old Node version to work around a crush of the `cycjimmy/semantic-release-action@v3.4.2` action used here at the time of writing, reference: https://github.com/cycjimmy/semantic-release-action/issues/159#issuecomment-1538652646
+
+      # - name: Get Node.js Version
+      #   id: node_version
+      #   run: |
+      #     echo "::set-output name=version::$(node -v)"
+      #   shell: bash
+
+      # - name: Install pnpm
+      #   run: npm install -g pnpm
+      #   shell: bash
+
+      # - name: Restore possibly cached dependencies
+      #   id: cache-node-modules
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ./node_modules
+      #     key: node-modules-${{ runner.os }}-${{ steps.node_version.outputs.version }}-${{ hashFiles('./pnpm-lock.yaml') }}
+
+      # - name: Install dependencies if weren't cached
+      #   if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      #   run: pnpm install --frozen-lockfile
+      #   shell: bash
+
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: v14 # setting this old Node version to work around a crush of the `cycjimmy/semantic-release-action@v3.4.2` action used here at the time of writing, reference: https://github.com/cycjimmy/semantic-release-action/issues/159#issuecomment-1538652646
 
       - name: Semantic Release
         id: semantic_release
