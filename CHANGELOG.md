@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/shtaif/iterified/compare/v1.0.2...v1.0.3) (2023-08-18)
+
+
+### Bug Fixes
+
+* fix release process attempt 3 ([#10](https://github.com/shtaif/iterified/issues/10)) ([6c57aca](https://github.com/shtaif/iterified/commit/6c57acabd63e5f0f06c7526e2d3dba1e90115bdc))
+
 ## [1.0.2](https://github.com/shtaif/iterified/compare/v1.0.1...v1.0.2) (2023-08-18)
 
 
