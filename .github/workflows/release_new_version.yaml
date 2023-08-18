@@ -2,10 +2,11 @@ name: Release new version
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   dry_run:
-    #     type: boolean
-    #     description: Perform as a dry run
+    inputs:
+      dry_run:
+        type: boolean
+        default: false
+        description: Perform as a dry run
 
 jobs:
   release_new_version:
@@ -27,7 +28,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
           semantic_version: 19.0.5
-          dry_run: false
+          dry_run: ${{ inputs.dry_run }}
           extra_plugins: |
             @semantic-release/commit-analyzer
             @semantic-release/release-notes-generator
