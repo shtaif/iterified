@@ -29,7 +29,8 @@
   "scripts": {
     "test": "ts-mocha -p ./tsconfig-esm.json",
     "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && node ./scripts/mark-dist-package-module-types.js",
-    "check-typings": "tsc --noEmit -p ./tsconfig-esm.json"
+    "check-typings": "tsc --noEmit -p ./tsconfig-esm.json",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@types/mocha": "^8.2.3",
