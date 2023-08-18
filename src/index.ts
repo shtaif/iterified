@@ -13,5 +13,3 @@ export {
 
 // TODO: Should implement such that when an instance is ended (or all has all its active iterators closed), it can always be reinitialized by just consuming it again, similarly with RxJS observables?
 // TODO: Research setting up UMD builds (see Igal's packages)
-
-//
