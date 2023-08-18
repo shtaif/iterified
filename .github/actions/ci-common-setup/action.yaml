@@ -15,7 +15,7 @@ runs:
       shell: bash
 
     - name: Install pnpm
-      run: npm install -g pnpm
+      run: curl -fsSL https://get.pnpm.io/install.sh | sh -
       shell: bash
 
     - name: Restore possibly cached dependencies
