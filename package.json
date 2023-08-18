@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "author": "Dor Shtaif <dorshtaif@gmail.com>",
   "license": "MIT",
-  "repository": "https://github.com/shtaif/multerator",
+  "repository": "https://github.com/shtaif/iterified",
   "description": "",
   "engineStrict": true,
   "sideEffects": false,
