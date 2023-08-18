@@ -8,10 +8,6 @@ on:
         default: false
         description: Perform as a dry run
 
-  pull_request: ### ### ###
-    branches: [master] ### ### ###
-
-
 jobs:
   release_new_version:
     runs-on: ubuntu-latest
@@ -24,7 +20,7 @@ jobs:
         with:
           node-version: v18
 
-      # https://github.com/cycjimmy/semantic-release-action/issues/159
+      # The following action version, value of `semantic_version` and the versions of all the plugins specifically set here are a work around found for now to deal with the constant crush described here: https://github.com/cycjimmy/semantic-release-action/issues/159 (was hard to just go with the Node v14 suggestion said there since we use pnpm and it outright doesn't support Node v14)
       - name: Semantic Release
         id: semantic_release
         uses: cycjimmy/semantic-release-action@v3.4.2
