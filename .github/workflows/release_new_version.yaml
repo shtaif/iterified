@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: v14 # setting this old Node version to workaround a crush of the `cycjimmy/semantic-release-action@v3.4.2` action used here at the time of writing, reference: https://github.com/cycjimmy/semantic-release-action/issues/159#issuecomment-1538652646
+          node-version: v14 # setting this old Node version to work around a crush of the `cycjimmy/semantic-release-action@v3.4.2` action used here at the time of writing, reference: https://github.com/cycjimmy/semantic-release-action/issues/159#issuecomment-1538652646
 
       - name: Semantic Release
         id: semantic_release
