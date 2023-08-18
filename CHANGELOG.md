@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/shtaif/iterified/compare/v1.0.1...v1.0.2) (2023-08-18)
+
+
+### Bug Fixes
+
+* package build script failing ([#9](https://github.com/shtaif/iterified/issues/9)) ([bf8ffee](https://github.com/shtaif/iterified/commit/bf8ffeebd4dcdc5ce1ed170c85283ca7a7d7ba66))
+
 ## [1.0.1](https://github.com/shtaif/iterified/compare/v1.0.0...v1.0.1) (2023-08-18)
 
 
