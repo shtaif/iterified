@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/shtaif/iterified/compare/v1.0.3...v1.0.4) (2023-08-19)
+
+
+### Bug Fixes
+
+* the TypeScript build's `module` config option ([#11](https://github.com/shtaif/iterified/issues/11)) ([8ff0831](https://github.com/shtaif/iterified/commit/8ff0831616946d220b681990ba6c51ae42dbb7e2))
+
 ## [1.0.3](https://github.com/shtaif/iterified/compare/v1.0.2...v1.0.3) (2023-08-18)
 
 
