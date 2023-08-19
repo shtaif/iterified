@@ -20,10 +20,10 @@ import { iterified } from 'iterified';
 
   try {
     for await (const value of iter) {
-      // ...
+      console.log(value);
     }
   } catch (err) {
-    // ...
+    console.error(err);
   }
 })();
 ```
