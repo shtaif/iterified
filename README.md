@@ -41,7 +41,7 @@ const iter = iterified((next, done, error) => {
 
 - Light weight, zero run-time dependencies
 - Fully written in TypeScript, comprehensive high-quality typings built in
-- Provides [both _ESM_ and _CommonJS_](#installation) builds
+- Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds
 - Compatible with both browser and Node.js environments
 
 ## Installation
@@ -57,7 +57,7 @@ npm i iterified
 pnpm i iterified
 ```
 
-Can then be imported as follows:
+<span id="code-importing-instructions">Can then be imported as follows:</span>
 
 ```ts
 // in `import` style (for ESM or most TypeScript-based project):
@@ -73,26 +73,28 @@ const { iterified } = require('iterified');
 
 ### Executor function
 
-The _executor function_ is a user provided-function passed to the main [`iterified`](#function-iterifiedexecutorfn) function and is meant to express in a basic, most-typically - callback style, the sequence of values wished to be yielded at the other iterable end. It is injected with 3 function arguments that serve as "internal controls" for the overlying iterable - `next`, `done` and `error`.
+The user-provided _executor function_ is passed to the main [`iterified`](#function-iterifiedexecutorfn) function and is meant to express in a basic, most-typically - callback style, the sequence of values wished to be yielded at the other iterable end. It is injected with 3 function arguments that serve as the "internal controls" for the overlying iterable - `next`, `done` and `error`.
 
-This kind of encapsulation pattern is parallel to the familiar [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax with its `resolve` and `reject` arguments, only that `iterfied` applies it to the realm of *multi-item sequences*, while promises to the realm of *a single resolved item*:
+This kind of encapsulation pattern is parallel to the familiar [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax with its `resolve` and `reject` arguments, only that `iterfied` applies it to the realm of *multi-item sequences*, while promises apply it to the realm of *a single resolved item*:
 
 ```ts
 // What this looks like in promises:
 
 const promise = new Promise<string>((resolve, reject) => {
   // Do something and then call `resolve` or `reject`...
+  // (cannot further call them again afterwards)
 });
 
 console.log('Resolved into:', await promise);
 
 
-// Compared to what this looks like for async iterables with iterified:
+// Compared to what this looks like for async iterables with Iterified:
 
 const iterable = iterified<string>((next, done, error) => {
   // Call `next` zero or more times to yield values.
   // May call `done` if/when there are no more values to yield.
-  // May call `error` providing some error if something unexpected happened
+  // May call `error` providing some error if something unexpected happens
+  // (cannot make further calls to `next` after calling `done` or `error`)
 });
 
 for await (const value of iterable) {
@@ -130,7 +132,7 @@ import { iterified } from 'iterified';
 })();
 ```
 
-### Lazy initialization
+### Lazily initialized
 
 The provided _executor function_ is lazily-handled; executing it is delayed up to the moment of pulling an initial value from some obtained iterator. This follows the native generator functions' familiar behavior (calling them only returns a generator instance and doesn't run any actual generator code until they're actually consumed).
 
@@ -157,11 +159,73 @@ const iterable = iterified<string>((next, done) => {
 })();
 ```
 
-The _executor function_ itself may optionally return another function to serve as a "tear down" logic, in which case is ensured to be invoked automatically as the last consuming iterator becomes closed. The tear down function is the appropriate place to close and dispose of any resources opened by the executor for generating values from.
+### Specifying teardown logic
 
-The returned async iterable works as a "multicast" iterable, meaning that when obtaining multiple iterators of it (such as executing multiple [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loops) - each individual consumer would get the same sequence of yielded values and thus can work in an independent, decoupled and concurrent fashion - an aspect that roughly resembles event emitters' typical behavior (like the web API's [EventTarget](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/EventTarget)).
+You can optionally specify any teardown/resource cleanup logic conveniently as part of the _Iterified_ iterable by just returning a function at the end of the _executor_. This is the appropriate place to close and dispose of any resources opened during the _executor_'s lifetime and used to generate values from. This function may be asynchronous (return a promise).
 
-Concurrent consumers of the _Iterified_ async iterable access emitted values via a single shared linked list, allowing each to process values in its own individual pace, regardless if it's faster or slower than the rate they're yielded by the _executor function_.
+The _teardown function_, if provided, would always be triggered automatically when either of these takes place:
+
+- The _Iterified_ iterable is ended from __inside__ (meaning _initiated by the producer_); by calling the `done()` or `error(e)` callbacks from within the _executor function_
+
+- The _Iterified_ iterable is ended from __outside__ (meaning _initiated by the consumer_); by closing the last remaining active iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop)
+
+Here's an example showing how either the consumer or the producer could initiate closure of the iterable as well as how a teardown function to handle this is provided:
+
+```ts
+import { iterified } from 'iterified';
+
+(async () => {
+  const wsMessages = iterified<string>((next, done) => {
+    const ws = new WebSocket('ws://localhost:8080');
+    ws.addEventListener('message', ev => {
+      next(ev.data);
+      if (shouldStopYieldingFurtherMessages()) {
+        done();
+      }
+    });
+    return () => ws.close(); // <-- To ensure the web socket will properly get closed on any event that our iterable would be disposed...
+  });
+
+  for await (const msg of wsMessages) {
+    console.log(msg);
+    if (hadEnoughMessages()) {
+      break;
+    }
+  }
+
+  // Once we've broken out of the loop reaching here the web socket connection got closed off automatically.
+})();
+```
+
+### Multicast iteration
+
+The returned async iterable works as a "multicast" iterable, meaning that when obtaining multiple iterators of it (such as multiple [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loops) - each individual consumer would get the exact sequence of values as the other and thus can work independently and concurrently in a decoupled fashion - roughly resembling event emitters' typical behavior (like the web API's [EventTarget](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/EventTarget)).
+
+Additional consuming iterators may safely be instantiated at any time point even after the _executor function_ was kicked off - every such one would simply pick up values yielded from that time onwards.
+
+```ts
+import { iterified } from 'iterified';
+
+const iterable = iterified<string>(next => {
+  let count = 0;
+  const intId = setInterval(() => next(count++), 1000);
+  return () => clearInterval(intId);
+});
+
+(async () => {
+  for await (const value of iterable) {
+    console.log(value);
+  }
+})();
+
+(async () => {
+  for await (const value of iterable) {
+    console.log(value);
+  }
+})();
+
+// Both loops above are going to *each* print 1, 2, 3... and so on - at the same time
+```
 
 # API
 
@@ -173,12 +237,12 @@ The user-provided _executor function_ expresses the values to be emitted and enc
 
 The user-provided _executor function_ is invoked with the following arguments:
 - `next(value: T)` - makes the iterable yield the specified value
-- <span id="">`done()` - makes the iterable end</span>
+- `done()` - makes the iterable end
 - `error(err: any)` - makes the iterable error out with the specified error value (and ends it)
 
 In addition, it may **optionally** return a teardown function for disposing of any state and opened resources that have been used during execution.
 
-The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or `for await...of` loop) of it. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed (multicast) down to each active iterator, picking up from the time it was obtained. Whenever the last remaining consuming iterator is closed, or alternatively when calling the `done()` callback from within the _executor function_ - it would optionally trigger the teardown function if was given, and close off the _Iterified_ iterable. This cycle is repeated again as soon as the _Iterified_ iterable gets reconsumed.
+The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the _Iterified_ iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (the last active iterator is closed) - it may trigger the optionally-given teardown function and close off the _Iterified_ iterable. This cycle would **repeat again** as soon as the _Iterified_ iterable gets reconsumed.
 
 ```ts
 import { iterified } from 'iterified';
