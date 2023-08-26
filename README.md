@@ -206,7 +206,7 @@ Additional consuming iterators may safely be instantiated at any time point even
 ```ts
 import { iterified } from 'iterified';
 
-const iterable = iterified<string>(next => {
+const iterable = iterified<number>(next => {
   let count = 0;
   const intId = setInterval(() => next(count++), 1000);
   return () => clearInterval(intId);
@@ -227,13 +227,21 @@ const iterable = iterified<string>(next => {
 // Both loops above are going to *each* print 1, 2, 3... and so on - at the same time
 ```
 
+### Buffering
+
+Since an _Iterified_ instance is driven by the __push-based__ nature of callbacks (inside the _executor function_), while talking to the surface as a __pull-based__ async iterable - there could be situations where it produces values faster than a certain consumer's consumption (or _pull_) rate. This might happen when the consumer has to `await` some extra async operations for each value it iterates through. However, for this _Iterified_ intuitively backs up every unconsumed value until consumed - hence there's no concern for loss of values had any iterator happened to lag behind.
+
+This feature does not incur multiplied memory usage in the case of __multiple__ lagging iterators - since the backed up values are organized as one shared linked list referenced by all iterators of a particular _Iterified_, traversed in each's own pace.
+
+Per your own requirements you can choose to not rely on this backup buffer, and instead preform every iteration's processing concurrently (e.g by __not__ `await`ing anything), so that the loop isn't delayed on every iteration. This is similar to how event emitters are consumed.
+
 # API
 
 ### function `iterified(executorFn)`
 
 Creates an _Iterified_ async iterable yielding each value as it gets emitted from the user-provided _executor function_.
 
-The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and managable resources that may be used to generate values from.
+The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and resource management that should be involved in generating them.
 
 The user-provided _executor function_ is invoked with the following arguments:
 - `next(value: T)` - makes the iterable yield the specified value
