@@ -161,13 +161,13 @@ const iterable = iterified<string>((next, done) => {
 
 ### Specifying teardown logic
 
-You can optionally specify any teardown/resource cleanup logic conveniently as part of the _Iterified_ iterable by just returning a function at the end of the _executor_. This is the appropriate place to close and dispose of any resources opened during the _executor_'s lifetime and used to generate values from. This function may be asynchronous (return a promise).
+You can optionally specify any teardown/resource cleanup logic conveniently as part of the `iterified` iterable by just returning a function at the end of the _executor_. This is the appropriate place to close and dispose of any resources opened during the _executor_'s lifetime and used to generate values from. This function may be asynchronous (return a promise).
 
 The _teardown function_, if provided, would always be triggered automatically when either of these takes place:
 
-- The _Iterified_ iterable is ended from __inside__ (meaning _initiated by the producer_); by calling the `done()` or `error(e)` callbacks from within the _executor function_
+- The `iterified` iterable is ended from __inside__ (meaning _initiated by the producer_); by calling the `done()` or `error(e)` callbacks from within the _executor function_
 
-- The _Iterified_ iterable is ended from __outside__ (meaning _initiated by the consumer_); by closing the last remaining active iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop)
+- The `iterified` iterable is ended from __outside__ (meaning _initiated by the consumer_); by closing the last remaining active iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop)
 
 Here's an example showing how either the consumer or the producer could initiate closure of the iterable as well as how a teardown function to handle this is provided:
 
@@ -206,7 +206,7 @@ Additional consuming iterators may safely be instantiated at any time point even
 ```ts
 import { iterified } from 'iterified';
 
-const iterable = iterified<string>(next => {
+const iterable = iterified<number>(next => {
   let count = 0;
   const intId = setInterval(() => next(count++), 1000);
   return () => clearInterval(intId);
@@ -227,13 +227,21 @@ const iterable = iterified<string>(next => {
 // Both loops above are going to *each* print 1, 2, 3... and so on - at the same time
 ```
 
+### Buffering
+
+Since an `iterified` instance is driven by the __push-based__ nature of callbacks (inside the _executor function_), while talking to the surface as a __pull-based__ async iterable - there could be situations where it produces values faster than a certain consumer's consumption (or _pull_) rate. This might happen when the consumer has to `await` some extra async operations for each value it iterates through. However, for this `iterified` intuitively backs up every unconsumed value until consumed - hence there's no concern for loss of values had any iterator happened to lag behind.
+
+This feature does not incur multiplied memory usage in the case of __multiple__ lagging iterators - since the backed up values are organized as one shared linked list referenced by all iterators of a particular `iterified`, traversed in each's own pace.
+
+Per your own requirements you can choose to not rely on this backup buffer, and instead preform every iteration's processing concurrently (e.g by __not__ `await`ing anything), so that the loop isn't delayed on every iteration. This is similar to how event emitters are consumed.
+
 # API
 
 ### function `iterified(executorFn)`
 
-Creates an _Iterified_ async iterable yielding each value as it gets emitted from the user-provided _executor function_.
+Creates an `iterified` async iterable yielding each value as it gets emitted from the user-provided _executor function_.
 
-The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and managable resources that may be used to generate values from.
+The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and resource management that should be involved in generating them.
 
 The user-provided _executor function_ is invoked with the following arguments:
 - `next(value: T)` - makes the iterable yield the specified value
@@ -242,7 +250,7 @@ The user-provided _executor function_ is invoked with the following arguments:
 
 In addition, it may **optionally** return a teardown function for disposing of any state and opened resources that have been used during execution.
 
-The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the _Iterified_ iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (the last active iterator is closed) - it may trigger the optionally-given teardown function and close off the _Iterified_ iterable. This cycle would **repeat again** as soon as the _Iterified_ iterable gets reconsumed.
+The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (the last active iterator is closed) - it may trigger the optionally-given teardown function and close off the `iterified` iterable. This cycle would **repeat again** as soon as the `iterified` iterable gets reconsumed.
 
 ```ts
 import { iterified } from 'iterified';
