@@ -44,6 +44,22 @@ const iter = iterified((next, done, error) => {
 ✔️ Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds<br />
 ✔️ Compatible with both browser and Node.js environments<br />
 
+# Table of contents
+
+- [Installation](#installation)
+- [Walkthrough](#walkthrough)
+  - [Executor function](#executor-function)
+  - [Lazily initialized](#lazily-initialized)
+  - [Specifying teardown logic](#specifying-teardown-logic)
+  - [Multicast iteration](#multicast-iteration)
+  - [Buffering](#buffering)
+  - [Controlling an `iterified` outside of its construction](#controlling-an-iterified-outside-of-its-construction)
+- [API](#api)
+  - [function iterified(executorFn)](#function-iterifiedexecutorfn)
+  - [function iterifiedUnwrapped()](#function-iterifiedunwrapped)
+- [Real-world examples for inspiration](#real-world-examples-for-inspiration)
+- [License](#license)
+
 ## Installation
 
 ```sh
