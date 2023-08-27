@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/shtaif/iterified/compare/v1.0.7...v1.0.8) (2023-08-27)
+
+
+### Bug Fixes
+
+* remove type declarations and arguments of iterator done values which slipped out before they were intended to ([#22](https://github.com/shtaif/iterified/issues/22)) ([68fdc8c](https://github.com/shtaif/iterified/commit/68fdc8c2cb72c3b87e14986b277194092c863b8e))
+
 ## [1.0.7](https://github.com/shtaif/iterified/compare/v1.0.6...v1.0.7) (2023-08-27)
 
 ## [1.0.6](https://github.com/shtaif/iterified/compare/v1.0.5...v1.0.6) (2023-08-27)
