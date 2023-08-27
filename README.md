@@ -37,12 +37,12 @@ const iter = iterified((next, done, error) => {
 })();
 ```
 
-## Features:
+## Features
 
-- Light weight, zero run-time dependencies
-- Fully written in TypeScript, comprehensive high-quality typings built in
-- Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds
-- Compatible with both browser and Node.js environments
+✔️ checked Light weight, zero run-time dependencies<br />
+✔️ Fully written in TypeScript, comprehensive high-quality typings built in<br />
+✔️ Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds<br />
+✔️ Compatible with both browser and Node.js environments<br />
 
 ## Installation
 
@@ -229,43 +229,122 @@ const iterable = iterified<number>(next => {
 
 ### Buffering
 
-Since an `iterified` instance is driven by the __push-based__ nature of callbacks (inside the _executor function_), while talking to the surface as a __pull-based__ async iterable - there could be situations where it produces values faster than a certain consumer's consumption (or _pull_) rate. This might happen when the consumer has to `await` some extra async operations for each value it iterates through. However, for this `iterified` intuitively backs up every unconsumed value until consumed - hence there's no concern for loss of values had any iterator happened to lag behind.
+Since an `iterified` instance is driven by the __push-based__ nature of callbacks (inside the _executor function_), while talking to the surface as a __pull-based__ async iterable - there could be situations where it produces values faster than a certain consumer's consumption (or _pull_) rate. This might happen when the consumer has to `await` some extra async operations for each value it iterates through. For these cases `iterified` intuitively backs up every unconsumed value until consumed - hence there's no concern for loss of values had any iterator happened to lag behind.
 
-This feature does not incur multiplied memory usage in the case of __multiple__ lagging iterators - since the backed up values are organized as one shared linked list referenced by all iterators of a particular `iterified`, traversed in each's own pace.
+In the case of __multiple__ "lagging" iterators, this feature does NOT incur multiplied memory cost - since internally the backed up values are all organized as one linked list that's shared across all iterators of a particular `iterified`, while each iterator is able to traverse over it in its own pace.
 
-Per your own requirements you can choose to not rely on this backup buffer, and instead preform every iteration's processing concurrently (e.g by __not__ `await`ing anything), so that the loop isn't delayed on every iteration. This is similar to how event emitters are consumed.
+You may choose to avoid relying on filling up this backup buffer by not suspending the consuming loop on its iterations, effectively running its work concurrently (by e.g executing the work __without__ `await`ing it). In any case, since this package deals with converting __callback-driven__ operations, we cannot escape their inherent un-regulatable nature. Therefore, there have to be a choice between either trading _potentially-unrestrained buffering_ for _potentially-unrestrained concurrency_, or vice versa. Depending on your specific circumstance, you each way might be optimal or less optimal. It might help to mention that in the event emitter worlde, the "concurrent" mode of operation is strictly the only way we can operate.
+
+### Controlling an `iterified` outside of its construction
+
+The _executor function_ helps to contain all the logic for how to emit values, however there are legitimate cases where being able to "push" values into the `iterified` instance from a place outside its construction (read; _executor function_) is useful.
+
+To address such use cases - there's another function exported named [`iterifiedUnwrapped`](#function-iterifiedunwrapped) and it acts like a more stripped-down version of the main [`iterified`](#function-iterifiedexecutorfn) function; there is no concept of _executor function_ nor its lazy initialization - instead, you get back an object with the `next`, `done` and `error` callbacks __exposed as methods__ directly on it, along with an `iterable` property. This way, producers of values for this iterable could be distributed over to contexts and scopes completely unrelated to the scope where it was constructed.
+
+Some possible application for this is to facilitate general-purpose channels of events, as illustrated here:
+
+```ts
+import { iterifiedUnwrapped } from 'iterified';
+
+class MyTaskQueueRunner {
+  #tasks: Task[] = [];
+  #taskFailures = iterifiedUnwrapped<Error>();
+
+  async start() {
+    while (this.#tasks.length > 0) {
+      try {
+        await runNextTask();
+      } catch (err) {
+        this.#taskFailures.next(err);
+      }
+    }
+  }
+
+  get taskFailures() {
+    return this.#taskFailures.iterable;
+  }
+
+  // ...
+}
+
+(async () => {
+  const queue = new MyTaskQueueRunner();
+
+  // *Do stuff and assign tasks to queue...*
+
+  queue.start();
+
+  for await (const taskError of queue.taskFailures) {
+    console.error('Task just failed with error:', taskError);
+  }
+})();
+```
+
+\** Refering to our analogies with promises again - you might be familiar with a classic pattern known in the ecosystem as "`deferred`" (soon to be standardized in ECMAScript as [`Promise.withResolvers`](https://github.com/tc39/proposal-promise-with-resolvers) at the time of writing). [`iterifiedUnwrapped`](#function-iterifiedunwrapped) has a pretty much the same rational, just applying that to async iterables instead of promises.
 
 # API
 
 ### function `iterified(executorFn)`
 
-Creates an `iterified` async iterable yielding each value as it gets emitted from the user-provided _executor function_.
+Creates an `iterified` async iterable, yielding each value as it gets emitted from the user-provided _executor function_.
 
 The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and resource management that should be involved in generating them.
 
 The user-provided _executor function_ is invoked with the following arguments:
-- `next(value: T)` - makes the iterable yield the specified value
-- `done()` - makes the iterable end
-- `error(err: any)` - makes the iterable error out with the specified error value (and ends it)
+- `next(value)` - makes the iterable yield `value` to all consuming iterators
+- `done()` - makes the iterable end, closing all consuming iterators
+- `error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
 
-In addition, it may **optionally** return a teardown function for disposing of any state and opened resources that have been used during execution.
+In addition, the _executor function_ may **optionally** return a teardown function for disposing of any state and opened resources that have been used during execution.
 
-The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (the last active iterator is closed) - it may trigger the optionally-given teardown function and close off the `iterified` iterable. This cycle would **repeat again** as soon as the `iterified` iterable gets reconsumed.
+The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before closing off the `iterified` iterable. This cycle would **repeat** as soon as the `iterified` iterable gets reconsumed from this state again.
 
 ```ts
 import { iterified } from 'iterified';
 
+// Iterable that emits "my_value" and ends immediately:
 iterified<string>((next, done, error) => {
-  next('value');
+  next('my_value');
   done();
 });
 ```
 
 ### function `iterifiedUnwrapped()`
 
-Like a "stripped down" version of the main [`iterified`](#function-iterifiedexecutorfn) above.
+Returns an object with the means for producing and consuming values exposed as direct properties.
 
-# Demonstrative examples
+Acts like a "stripped down" version of the main [`iterified`](#function-iterifiedexecutorfn) above. Does not receive an [_executor function_](#executor-function). Can be seen essentially as a bare, general-purpose channel of events, however while still supporting [multicasting](#multicast-iteration) and [buffering](#buffering) just as the main [`iterified`](#function-iterifiedexecutorfn) function.
+
+Appeals to scenarios in which the scope that needs to push new values isn't decendant to the scope of construction, as is forced if using the main [`iterified`](#function-iterifiedexecutorfn).
+
+Returns an object with the following structure:
+- `.next(value)` - makes the iterable yield `value` to all consuming iterators
+- `.done()` - makes the iterable end, closing all consuming iterators
+- `.error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
+- `.iterable` - the async iterable object, fed from the methods above
+
+As opposed to the main [`iterified`](#function-iterifiedexecutorfn), which can implicitly initialize and uninitialize multiple times in response to how it's consumed - the object returned by `iterifiedUnwrapped` is __single-use__; once instructed to end (`.done()`) or error out (`.error(e)`) - it stays closed. If needing to signal an end as such but yet be able to continue delivering values, `iterifiedUnwrapped()` has to be called again, recreating a new object.
+
+```ts
+import { iterifiedUnwrapped } from 'iterified';
+
+const iterifiedObj = iterifiedUnwrapped<{ color: string; }>();
+
+iterifiedObj.next({ color: 'teal' });
+iterifiedObj.next({ color: 'ikea-beige' });
+
+iterifiedObj.done();
+
+// Later, at a place possibly very distanced from the above:
+
+(async () => {
+  for await (const { color } of iterifiedObj.iterable) {
+    console.log({ color }); // Logs "teal", "ikea-beige" and then breaks
+  }
+})();
+```
+
+# Real-world examples for inspiration:
 
 Encapsulating a `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscription as an async iterable:
 
