@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { writeFileSync } = require('fs');
+import { writeFileSync } from 'fs';
 
 const distDirNameAndPackageFileMappings = {
   'dist/esm': { type: 'module' },

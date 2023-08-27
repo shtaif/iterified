@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "test": "ts-mocha -p ./tsconfig-cjs.json",
-    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && node ./scripts/mark-dist-package-module-types.js",
+    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node ./scripts/mark-dist-package-module-types.ts",
     "check-typings": "tsc --noEmit -p ./tsconfig-esm.json",
     "prepublishOnly": "npm run build"
   },
@@ -47,6 +47,7 @@
     "rimraf": "^5.0.1",
     "sinon": "^15.2.0",
     "ts-mocha": "^8.0.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
 }
