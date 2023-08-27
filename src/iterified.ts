@@ -3,9 +3,7 @@ import { type ExecutorFn } from './utils/types/ExecutorFn';
 
 export { iterified, type ExecutorFn, type Iterified, type IterifiedIterator };
 
-function iterified<TNext /*, TDone = void | undefined*/>(
-  executorFn: ExecutorFn<TNext /*, TDone*/>
-): Iterified<TNext /*, TDone*/> {
+function iterified<TNext>(executorFn: ExecutorFn<TNext>): Iterified<TNext> {
   let channel: MulticastChannel<TNext> | undefined;
   let suspendFurtherPushes = false;
   let activeIteratorCount = 0;
