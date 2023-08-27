@@ -1,12 +1,14 @@
 # Iterified
 
+> Convert any callback-based sequence of values into a full-fledged async iterable
+
 `iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. With this, you can take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for`-`await`-`of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
 
 By being able to express any thing as an async iterable, it can further be supercharged using the growing number of available iterable utilities, such as [iter-tools](https://github.com/iter-tools/iter-tools), [IxJS](https://github.com/ReactiveX/IxJS) and many more.
 
 This concept of interface resembles and is inspired by the [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax, as well as [RxJS's plain `Observable` constructor](https://rxjs.dev/guide/observable).
 
-### Quick overview
+### Quick usage
 
 ```ts
 import { iterified } from 'iterified';
@@ -44,7 +46,7 @@ const iter = iterified((next, done, error) => {
 ✔️ Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds<br />
 ✔️ Compatible with both browser and Node.js environments<br />
 
-# Table of contents
+# Table of Contents
 
 - [Installation](#installation)
 - [Walkthrough](#walkthrough)
