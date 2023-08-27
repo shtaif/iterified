@@ -398,7 +398,7 @@ it('when the iterable gets errored through the executor function, the "erroring"
 
   const iterable = iterified<void>((next, _, error) => {
     next();
-    error();
+    error(new Error());
     return async () => {
       await nextTick();
       spiedCleanupFnFinishedPromiseResolve();
