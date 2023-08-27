@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "test": "ts-mocha -p ./tsconfig-cjs.json",
-    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node ./scripts/mark-dist-package-module-types.ts",
+    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node ./scripts/set-module-type-in-dist-builds.ts",
     "check-typings": "tsc --noEmit -p ./tsconfig-esm.json",
     "prepublishOnly": "npm run build"
   },
