@@ -249,7 +249,7 @@ Since an `iterified` instance is driven by the __push-based__ nature of callback
 
 In the case of __multiple__ "lagging" iterators, this feature does NOT incur multiplied memory cost - since internally the backed up values are all organized as one linked list that's shared across all iterators of a particular `iterified`, while each iterator is able to traverse over it in its own pace.
 
-You may choose to avoid relying on filling up this backup buffer by not suspending the consuming loop on its iterations, effectively running its work concurrently (by e.g executing the work __without__ `await`ing it). In any case, since this package deals with converting __callback-driven__ operations, we cannot escape their inherent un-regulatable nature. Therefore, there have to be a choice between either trading _potentially-unrestrained buffering_ for _potentially-unrestrained concurrency_, or vice versa. Depending on your specific circumstance, you each way might be optimal or less optimal. It might help to mention that in the event emitter worlde, the "concurrent" mode of operation is strictly the only way we can operate.
+You may choose to avoid relying on filling up this backup buffer by not suspending the consuming loop on its iterations, effectively running its work concurrently (by e.g executing the work __without__ `await`ing it). In any case, since this package deals with converting __callback-driven__ operations, we cannot escape their inherent un-regulatable nature. Therefore, there have to be a choice between either trading _potentially-unrestrained buffering_ for _potentially-unrestrained concurrency_, or vice versa. Depending on the specific circumstance, each way might be optimal or less optimal. Event emitters for comparison, adhear only to the "concurrent" mode of operation when executing handlers.
 
 ### Controlling an `iterified` outside of its construction
 
@@ -360,7 +360,7 @@ iterifiedObj.done();
 })();
 ```
 
-# Real-world examples for inspiration:
+# Real-world examples for inspiration
 
 Encapsulating a `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscription as an async iterable:
 
