@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/shtaif/iterified/compare/v1.0.8...v1.0.9) (2023-08-29)
+
+
+### Bug Fixes
+
+* upgrading deps to fix nanoid dep vulnerability reported on https://github.com/shtaif/iterified/security/dependabot/1 ([#24](https://github.com/shtaif/iterified/issues/24)) ([22de6e6](https://github.com/shtaif/iterified/commit/22de6e6e25f2c305299ebd3c64355d1381fef6d9))
+
 ## [1.0.8](https://github.com/shtaif/iterified/compare/v1.0.7...v1.0.8) (2023-08-27)
 
 
