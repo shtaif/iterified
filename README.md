@@ -41,10 +41,11 @@ const iter = iterified((next, done, error) => {
 
 ## Features
 
-✔️ checked Light weight, zero run-time dependencies<br />
+✔️ Light weight, zero run-time dependencies<br />
 ✔️ Fully written in TypeScript, comprehensive high-quality typings built in<br />
 ✔️ Provides [both _ESM_ and _CommonJS_](#code-importing-instructions) builds<br />
 ✔️ Compatible with both browser and Node.js environments<br />
+✔️ [Semver](https://semver.org) compliant<br />
 
 # Table of Contents
 
