@@ -355,9 +355,9 @@ it('when the iterable gets ended through the executor function, cleanup function
 });
 
 it('when the iterable gets ended through the executor function, the "ending" promise got from its iterator will only resolve after cleanup function has asyncly finished running', async () => {
-  let spiedCleanupFnFinishedPromiseResolve;
+  let spiedCleanupFnFinishedPromiseResolve: () => void;
 
-  const spiedCleanupFnFinishedPromise = new Promise(
+  const spiedCleanupFnFinishedPromise = new Promise<void>(
     resolve => (spiedCleanupFnFinishedPromiseResolve = resolve)
   );
 
@@ -380,7 +380,7 @@ it('when the iterable gets ended through the executor function, the "ending" pro
     it2.next(),
   ];
 
-  const [promiseResolvedFirst] = await sortPromisesByResolutionOrder([
+  const [promiseResolvedFirst] = await sortPromisesByResolutionOrder<unknown>([
     spiedCleanupFnFinishedPromise,
     finalYieldPromise1,
     finalYieldPromise2,
@@ -390,9 +390,9 @@ it('when the iterable gets ended through the executor function, the "ending" pro
 });
 
 it('when the iterable gets errored through the executor function, the "erroring" promise got from its iterator will reject only after cleanup function has asyncly finished running', async () => {
-  let spiedCleanupFnFinishedPromiseResolve;
+  let spiedCleanupFnFinishedPromiseResolve: () => void;
 
-  const spiedCleanupFnFinishedPromise = new Promise(
+  const spiedCleanupFnFinishedPromise = new Promise<void>(
     resolve => (spiedCleanupFnFinishedPromiseResolve = resolve)
   );
 
