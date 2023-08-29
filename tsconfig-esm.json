@@ -4,7 +4,6 @@
   "compilerOptions": {
     "outDir": "./dist/esm",
     "module": "ESNext",
-    "moduleResolution": "NodeNext",
     "target": "es2019",
     "strict": true,
     "noImplicitAny": true,
