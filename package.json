@@ -10,6 +10,24 @@
   "description": "",
   "engineStrict": true,
   "sideEffects": false,
+  "keywords": [
+    "callbacks-promises-async-await",
+    "iterable",
+    "iterator",
+    "async-generator",
+    "async-iterable",
+    "async-iterator",
+    "async-iterable-utility",
+    "promise",
+    "for-await-of",
+    "async-channels",
+    "async-await",
+    "callbacks",
+    "lazy",
+    "disposable",
+    "typescript",
+    "esm"
+  ],
   "engines": {
     "node": ">=10.21.0"
   },
