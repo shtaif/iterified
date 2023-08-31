@@ -1,5 +1,10 @@
 # Iterified
 
+<p>
+  <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/on_pr_to_master.yaml/badge.svg" />    
+  <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="" />
+<p>
+
 > Convert any callback-based sequence of values into a full-fledged async iterable
 
 `iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. With this, you can take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for`-`await`-`of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
