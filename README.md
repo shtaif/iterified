@@ -1,7 +1,12 @@
 # Iterified
 
 <p>
-  <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/on_pr_to_master.yaml/badge.svg" />    
+  <a href="https://github.com/shtaif/iterified/actions/workflows/ci-tests.yaml">
+    <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/ci-tests.yaml/badge.svg" />
+  </a>
+  <a href="https://github.com/shtaif/iterified/actions/workflows/ci-build-check.yaml">
+    <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/ci-build-check.yaml/badge.svg" />
+  </a>
   <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="" />
 <p>
 
