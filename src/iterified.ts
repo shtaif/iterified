@@ -1,9 +1,15 @@
 import { MulticastChannel, createMulticastChannel } from './utils/createMulticastChannel';
 import { type ExecutorFn } from './utils/types/ExecutorFn';
 
-export { iterified, type ExecutorFn, type Iterified, type IterifiedIterator };
+export {
+  iterified,
+  type ExecutorFn,
+  type IterifiedIterable,
+  type Iterified,
+  type IterifiedIterator,
+};
 
-function iterified<TNext>(executorFn: ExecutorFn<TNext>): Iterified<TNext> {
+function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNext> {
   let channel: MulticastChannel<TNext> | undefined;
   let suspendFurtherPushes = false;
   let activeIteratorCount = 0;
@@ -91,7 +97,16 @@ function iterified<TNext>(executorFn: ExecutorFn<TNext>): Iterified<TNext> {
   }
 }
 
-type Iterified<TNextValue, TDoneValue = undefined | void> = {
+/**
+ * @deprecated This type is deprecated - use {@link IterifiedIterable} instead.
+ * @see {@link IterifiedIterable}
+ */
+type Iterified<TNextValue, TDoneValue = undefined | void> = IterifiedIterable<
+  TNextValue,
+  TDoneValue
+>;
+
+type IterifiedIterable<TNextValue, TDoneValue = undefined | void> = {
   [Symbol.asyncIterator](): IterifiedIterator<TNextValue, TDoneValue>;
 };
 

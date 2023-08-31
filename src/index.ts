@@ -1,4 +1,9 @@
-import { iterified, type Iterified, type IterifiedIterator } from './iterified';
+import {
+  iterified,
+  type Iterified,
+  type IterifiedIterable,
+  type IterifiedIterator,
+} from './iterified';
 import { iterifiedUnwrapped, type IterifiedUnwrapped } from './iterifiedUnwrapped';
 import { type ExecutorFn } from './utils/types/ExecutorFn';
 
@@ -7,6 +12,7 @@ export {
   iterifiedUnwrapped,
   type ExecutorFn,
   type Iterified,
+  type IterifiedIterable,
   type IterifiedUnwrapped,
   type IterifiedIterator,
 };
