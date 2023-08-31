@@ -1,4 +1,4 @@
-import { type Iterified } from './iterified';
+import { type IterifiedIterable } from './iterified';
 import { createMulticastChannel } from './utils/createMulticastChannel';
 
 export { iterifiedUnwrapped, type IterifiedUnwrapped };
@@ -29,7 +29,7 @@ function iterifiedUnwrapped<TNext>(): IterifiedUnwrapped<TNext, void | undefined
 }
 
 type IterifiedUnwrapped<TNextValue, TDoneValue> = {
-  iterable: Iterified<TNextValue, TDoneValue>;
+  iterable: IterifiedIterable<TNextValue, TDoneValue>;
   next: (nextValue: TNextValue) => void;
   done: (returnValue: TDoneValue) => void;
   error: (error?: unknown) => void;
