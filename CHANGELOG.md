@@ -1,3 +1,5 @@
+## [1.1.1](https://github.com/shtaif/iterified/compare/v1.1.0...v1.1.1) (2023-09-03)
+
 # [1.1.0](https://github.com/shtaif/iterified/compare/v1.0.9...v1.1.0) (2023-08-31)
 
 
