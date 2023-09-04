@@ -1,9 +1,9 @@
 import {
   iterified,
-  type TeardownFn,
   type IterifiedIterable,
   type IterifiedIterator,
   type ExecutorFn,
+  type TeardownFn,
   type Iterified,
 } from './iterified';
 import { iterifiedUnwrapped, type IterifiedUnwrapped } from './iterifiedUnwrapped';
@@ -11,11 +11,11 @@ import { iterifiedUnwrapped, type IterifiedUnwrapped } from './iterifiedUnwrappe
 export {
   iterified,
   iterifiedUnwrapped,
-  type TeardownFn,
   type IterifiedIterable,
   type IterifiedUnwrapped,
   type IterifiedIterator,
   type ExecutorFn,
+  type TeardownFn,
   type Iterified,
 };
 
