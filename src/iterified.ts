@@ -1,9 +1,10 @@
+import { type MaybePromise } from './utils/types/MaybePromise';
 import { MulticastChannel, createMulticastChannel } from './utils/createMulticastChannel';
-import { type ExecutorFn } from './utils/types/ExecutorFn';
 
 export {
   iterified,
   type ExecutorFn,
+  type TeardownFn,
   type IterifiedIterable,
   type Iterified,
   type IterifiedIterator,
@@ -97,6 +98,10 @@ function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNex
   }
 }
 
+type IterifiedIterable<TNextValue, TDoneValue = undefined | void> = {
+  [Symbol.asyncIterator](): IterifiedIterator<TNextValue, TDoneValue>;
+};
+
 /**
  * @deprecated This type is deprecated - use {@link IterifiedIterable} instead.
  * @see {@link IterifiedIterable}
@@ -106,11 +111,19 @@ type Iterified<TNextValue, TDoneValue = undefined | void> = IterifiedIterable<
   TDoneValue
 >;
 
-type IterifiedIterable<TNextValue, TDoneValue = undefined | void> = {
-  [Symbol.asyncIterator](): IterifiedIterator<TNextValue, TDoneValue>;
-};
-
 type IterifiedIterator<TNextValue, TDoneValue = undefined | void> = {
   next(): Promise<IteratorResult<TNextValue, TDoneValue>>;
   return(): Promise<IteratorReturnResult<TDoneValue>>;
 };
+
+type ExecutorFn<TNext> = (
+  nextCb: (nextValue: TNext) => void,
+  doneCb: () => void,
+  errorCb: (error: unknown) => void
+) => MaybePromise<void | TeardownFn>;
+
+/**
+ * ...
+ * @see {@link ExecutorFn}
+ */
+type TeardownFn = () => MaybePromise<void>;
