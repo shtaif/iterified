@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/shtaif/iterified/compare/v1.1.1...v1.2.0) (2023-09-04)
+
+
+### Features
+
+* introduce a named type to represent the teardown function, export as part of public API ([#33](https://github.com/shtaif/iterified/issues/33)) ([6ca035b](https://github.com/shtaif/iterified/commit/6ca035b966acf356ff700343436eb95cbbde6ac2))
+
 ## [1.1.1](https://github.com/shtaif/iterified/compare/v1.1.0...v1.1.1) (2023-09-03)
 
 # [1.1.0](https://github.com/shtaif/iterified/compare/v1.0.9...v1.1.0) (2023-08-31)
