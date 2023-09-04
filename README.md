@@ -192,7 +192,7 @@ const iterable = iterified<string>((next, done) => {
 
 You can optionally specify any teardown/resource cleanup logic conveniently as part of the `iterified` iterable by just returning a function at the end of the _executor_. This is the appropriate place to close and dispose of any resources opened during the _executor_'s lifetime and used to generate values from. This function may be asynchronous (return a promise).
 
-The _teardown function_, if provided, would always be triggered automatically when either of these takes place:
+If provided, the _teardown function_ would always be triggered automatically when either of these takes place:
 
 - The `iterified` iterable is ended from __inside__ (meaning _initiated by the producer_); by calling the `done()` or `error(e)` callbacks from within the _executor function_
 
@@ -320,6 +320,7 @@ Creates an `iterified` async iterable, yielding each value as it gets emitted fr
 The user-provided _executor function_ expresses the values to be emitted and encapsulates any logic and resource management that should be involved in generating them.
 
 The user-provided _executor function_ is invoked with the following arguments:
+
 - `next(value)` - makes the iterable yield `value` to all consuming iterators
 - `done()` - makes the iterable end, closing all consuming iterators
 - `error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
@@ -347,6 +348,7 @@ Acts like a "stripped down" version of the main [`iterified`](#function-iterifie
 Appeals to scenarios in which the scope that needs to push new values isn't decendant to the scope of construction, as is forced if using the main [`iterified`](#function-iterifiedexecutorfn).
 
 Returns an object with the following structure:
+
 - `.next(value)` - makes the iterable yield `value` to all consuming iterators
 - `.done()` - makes the iterable end, closing all consuming iterators
 - `.error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
@@ -375,40 +377,32 @@ iterifiedObj.done();
 
 # Real-world examples for inspiration
 
-Encapsulating a `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscription as an async iterable:
+Iterifying a `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscription as an async iterable:
 
 ```ts
 import { iterified } from 'iterified';
 import { createClient } from 'redis';
 
-const channelsToSubscribe = ['my-channel-1', 'my-channel-2'];
-
 const redisClient = createClient(/* ... */);
 
-const redisChannelMessages = iterified(async (next, done, error) => {
-  const msgHandler = (channel, message) =>
-    next({
-      channel,
-      message,
-    });
+function redisSubscribe(pattern: string): AsyncIterable<{
+  channel: string;
+  message: string
+}> {
+  return iterified(async next => {
+    const listener = (message: string, channel: string): void => {
+      next({ channel, message });
+    };
+    await redisSubscriber.pSubscribe(pattern, listener);
+    return () => redisSubscriber.pUnsubscribe(pattern, listener);
+  });
+}
 
-  try {
-    await redisClient.subscribe(...channelsToSubscribe);
-  } catch (err) {
-    error(err);
-  }
-
-  redisClient.on('message', msgHandler);
-
-  return async () => {
-    await redisClient.unsubscribe(...channelsToSubscribe);
-    msgHandler.off(msgHandler);
-  };
-});
+// Later used like so:
 
 (async () => {
-  for await (const { channel, message } of redisChannelMessages) {
-    console.log(`Received ${message} from ${channel}`);
+  for await (const {channel, message } of redisSubscribe('my-incoming-messages:*')) {
+    console.log(channel, message)
   }
 })();
 ```
