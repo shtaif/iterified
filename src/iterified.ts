@@ -123,7 +123,25 @@ type ExecutorFn<TNext> = (
 ) => MaybePromise<void | TeardownFn>;
 
 /**
- * ...
+ * A teardown function which can be optionally returned from the _Executor function_ ({@link ExecutorFn})
+ * provided by the user.
+ *
+ * This is the appropriate place to close and dispose of any resources opened during the
+ * _executor_'s lifetime and used to generate values from. This function may be asynchronous
+ * (return a promise).
+ *
+ * If provided, the _teardown function_ would always be triggered automatically when either
+ * of these takes place:
+ *
+ * - The `iterified` iterable is ended from __inside__ (meaning _initiated by the producer_);
+ * by calling the `done()` or `error(e)` callbacks from within the _executor function_
+ *
+ * - The `iterified` iterable is ended from __outside__ (meaning _initiated by the consumer_);
+ * by closing the last remaining active iterator
+ * (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop)
+ *
  * @see {@link ExecutorFn}
+ *
+ * @see https://github.com/shtaif/iterified#specifying-teardown-logic for more reference
  */
 type TeardownFn = () => MaybePromise<void>;
