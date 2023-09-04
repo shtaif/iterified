@@ -71,6 +71,8 @@ const iter = iterified((next, done, error) => {
   - [function iterified(executorFn)](#function-iterifiedexecutorfn)
   - [function iterifiedUnwrapped()](#function-iterifiedunwrapped)
 - [Real-world examples for inspiration](#real-world-examples-for-inspiration)
+  - [Iterifying `redis` Pub/Sub subscriptions into async iterables](#iterifying-redis-pubsub-subscriptions-into-async-iterables)
+  - [Iterifying the `EventSource` web API into an async iterable](#iterifying-the-eventsource-web-api-into-an-async-iterable)
 - [License](#license)
 
 ## Installation
@@ -377,7 +379,7 @@ iterifiedObj.done();
 
 # Real-world examples for inspiration
 
-Iterifying a `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscription as an async iterable:
+#### Iterifying `redis` [Pub/Sub](https://github.com/redis/node-redis/blob/master/docs/pub-sub.md) subscriptions into async iterables:
 
 ```ts
 import { iterified } from 'iterified';
@@ -401,8 +403,44 @@ function redisSubscribe(pattern: string): AsyncIterable<{
 // Later used like so:
 
 (async () => {
-  for await (const {channel, message } of redisSubscribe('my-incoming-messages:*')) {
+  for await (const { channel, message } of redisSubscribe('my-incoming-messages:*')) {
     console.log(channel, message)
+  }
+})();
+```
+
+#### Iterifying the [`EventSource` web API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) into an async iterable:
+
+```ts
+function sseIterable(url: string, options?: EventSourceInit): AsyncIterable<string> {
+  return iterified<string>((next, _, error) => {
+    const eventSource = new EventSource(url, options);
+
+    const messageListener = (event: MessageEvent<string>) => {
+      next(event.data);
+    };
+
+    const errorListener = (event: Event) => {
+      error(event);
+    };
+
+    // *Assuming* the downstream messages here would be labeled as with a "message" type
+    eventSource.addEventListener('message', messageListener);
+    eventSource.addEventListener('error', errorListener);
+
+    return () => {
+      eventSource.removeEventListener('message', messageListener);
+      eventSource.removeEventListener('error', errorListener);
+      eventSource.close();
+    };
+  });
+}
+
+// Later used like so:
+
+(async () => {
+  for await (const message of sseIterable('http://localhost:3000/my-messages')) {
+    console.log(message);
   }
 })();
 ```
