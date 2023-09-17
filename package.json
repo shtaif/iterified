@@ -8,7 +8,7 @@
     "type": "git",
     "url": "https://github.com/shtaif/iterified"
   },
-  "description": "",
+  "description": "Convert any callback-based sequence of values into a full-fledged async iterable",
   "engineStrict": true,
   "sideEffects": false,
   "keywords": [
