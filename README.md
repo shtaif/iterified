@@ -9,7 +9,9 @@
   <a href="https://github.com/shtaif/iterified/actions/workflows/ci-build-check.yaml">
     <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/ci-build-check.yaml/badge.svg" />
   </a>
-  <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="" />
+  <a href="https://semver.org">
+    <img alt="semantic-release" src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="" />
+  </a>
 <p>
 
 `iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. This lets you take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for await...of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
