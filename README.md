@@ -12,7 +12,7 @@
 
 > Convert any callback-based sequence of values into a full-fledged async iterable
 
-`iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. With this, you can take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for`-`await`-`of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
+`iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. This lets you take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for await...of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
 
 By being able to express any thing as an async iterable, it can further be supercharged using the growing number of available iterable utilities, such as [iter-tools](https://github.com/iter-tools/iter-tools), [IxJS](https://github.com/ReactiveX/IxJS) and many more.
 
@@ -106,7 +106,7 @@ const { iterified } = require('iterified');
 
 The user-provided _executor function_ is passed to the main [`iterified`](#function-iterifiedexecutorfn) function and is meant to express in a basic, most-typically - callback style, the sequence of values wished to be yielded at the other iterable end. It is injected with 3 function arguments that serve as the "internal controls" for the overlying iterable - `next`, `done` and `error`.
 
-This kind of encapsulation pattern is parallel to the familiar [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax with its `resolve` and `reject` arguments, only that `iterfied` applies it to the realm of *multi-item sequences*, while promises apply it to the realm of *a single resolved item*:
+This type of encapsulation pattern is parallel to the familiar [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax with its `resolve` and `reject` arguments, only that `iterfied` applies it to the realm of _multi-item sequences_, while promises apply it to the realm of _a single resolved item_:
 
 ```ts
 // What this looks like in promises:
@@ -117,7 +117,6 @@ const promise = new Promise<string>((resolve, reject) => {
 });
 
 console.log('Resolved into:', await promise);
-
 
 // Compared to what this looks like for async iterables with Iterified:
 
@@ -311,7 +310,7 @@ class MyTaskQueueRunner {
 })();
 ```
 
-\** Refering to our analogies with promises again - you might be familiar with a classic pattern known in the ecosystem as "`deferred`" (soon to be standardized in ECMAScript as [`Promise.withResolvers`](https://github.com/tc39/proposal-promise-with-resolvers) at the time of writing). [`iterifiedUnwrapped`](#function-iterifiedunwrapped) has a pretty much the same rational, just applying that to async iterables instead of promises.
+\*\* Refering to our analogies with promises again - you might be familiar with a classic pattern known in the ecosystem as "`deferred`" (soon to be standardized in ECMAScript as [`Promise.withResolvers`](https://github.com/tc39/proposal-promise-with-resolvers) at the time of writing). [`iterifiedUnwrapped`](#function-iterifiedunwrapped) has a pretty much the same rational, just applying that to async iterables instead of promises.
 
 # API
 
@@ -327,9 +326,9 @@ The user-provided _executor function_ is invoked with the following arguments:
 - `done()` - makes the iterable end, closing all consuming iterators
 - `error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
 
-In addition, the _executor function_ may **optionally** return a teardown function for disposing of any state and opened resources that have been used during execution.
+In addition, the _executor function_ may __optionally__ return a teardown function for disposing of any state and opened resources that have been used during execution.
 
-The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before closing off the `iterified` iterable. This cycle would **repeat** as soon as the `iterified` iterable gets reconsumed from this state again.
+The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off of the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before closing off the `iterified` iterable. This cycle would __repeat__ as soon as the `iterified` iterable gets reconsumed from this state again.
 
 ```ts
 import { iterified } from 'iterified';
@@ -424,7 +423,7 @@ function sseIterable(url: string, options?: EventSourceInit): AsyncIterable<stri
       error(event);
     };
 
-    // *Assuming* the downstream messages here would be labeled as with a "message" type
+    // *Assuming* the downstream messages here would be labeled with a "message" type from server side
     eventSource.addEventListener('message', messageListener);
     eventSource.addEventListener('error', errorListener);
 
