@@ -27,7 +27,12 @@ function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNex
 
       const gen = (async function* () {
         if (++activeIteratorCount === 1) {
-          possiblyReturnedCleanupFnPromise = executorFn(pushCb, doneCb, errorCb);
+          try {
+            possiblyReturnedCleanupFnPromise = executorFn(pushCb, doneCb, errorCb);
+          } catch (err) {
+            channel.close();
+            throw err;
+          }
           if (possiblyReturnedCleanupFnPromise instanceof Promise) {
             possiblyReturnedCleanupFnPromise.catch(err => closeIterable(true, err));
           }
@@ -43,14 +48,13 @@ function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNex
         }
       })();
 
-      const originalGenReturn = gen.return as unknown as () => Promise<
-        IteratorReturnResult<undefined | void>
-      >;
+      const originalGenReturn = gen.return;
 
       return Object.assign(gen, {
         async return() {
           await channelIterator.return();
-          return await originalGenReturn.call(gen);
+          await originalGenReturn.call(gen);
+          return { done: true as const, value: undefined };
         },
       });
     },
