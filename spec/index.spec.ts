@@ -149,14 +149,13 @@ it('*synchronous* exception thrown from executor function propagates up only to 
   const it1 = iterable[Symbol.asyncIterator]();
   const it2 = iterable[Symbol.asyncIterator]();
 
-  const it1IterationPromise = it1.next();
-  const it2IterationPromise = it2.next();
+  const it1NextPromise = it1.next();
+  const it2NextPromise = it2.next();
 
-  expect(await getPromiseState(it1IterationPromise)).toBe('REJECTED');
-  expect(await getPromiseState(it2IterationPromise)).toBe('PENDING');
-  await expect(it1IterationPromise).rejects.toMatchObject({
-    message: 'oops...',
-  });
+  expect(await getPromiseState(it1NextPromise)).toBe('REJECTED');
+  expect(await getPromiseState(it2NextPromise)).toBe('RESOLVED');
+  await expect(it1NextPromise).rejects.toMatchObject({ message: 'oops...' });
+  await expect(it2NextPromise).resolves.toMatchObject({ done: true, value: undefined });
 });
 
 it('*asynchronous* exception thrown from executor function propagates up to multiple simultaneous consuming iterators', async () => {
