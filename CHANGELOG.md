@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/shtaif/iterified/compare/v1.2.2...v1.2.3) (2023-09-18)
+
+
+### Bug Fixes
+
+* synchronous exceptions thrown from executor function causing consecutive pulls past the initial rejected one to hang indefinitely without resolving ([#41](https://github.com/shtaif/iterified/issues/41)) ([e36faf4](https://github.com/shtaif/iterified/commit/e36faf49d73bb23bf897c737bfc4c66433c9adf9))
+
 ## [1.2.2](https://github.com/shtaif/iterified/compare/v1.2.1...v1.2.2) (2023-09-17)
 
 ## [1.2.1](https://github.com/shtaif/iterified/compare/v1.2.0...v1.2.1) (2023-09-17)
