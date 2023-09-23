@@ -1,88 +1,87 @@
-import createDeferred, { Deferred } from './createDeferred';
-import makeCallableOnceAtATime from './intoCallableOnceAtATime';
+import { Deferred } from './createDeferred';
 import { type MaybePromise } from './types/MaybePromise';
 
 export { createMulticastChannel, type MulticastChannel, type MulticastChannelIterator };
 
 function createMulticastChannel<T>(): MulticastChannel<T> {
-  const pendingNextPutDeferreds: Map<object, Deferred<void>> = new Map();
-  let isChannelClosed = false;
-  let listTail: QueuedItemNode<T> = {
+  let channelState = ChannelInternalState.ACTIVE;
+  let channelErrorValue: unknown;
+  let sharedNextEventDeferred = new Deferred<void>();
+  let listTail: LinkedListNode<T> = {
     item: undefined as any,
     next: undefined,
   };
 
   return {
+    get isClosed() {
+      return channelState !== ChannelInternalState.ACTIVE;
+    },
+
     put(value: T): void {
-      if (isChannelClosed) {
+      if (channelState !== ChannelInternalState.ACTIVE) {
         return;
       }
       listTail.next = { item: value, next: undefined };
       listTail = listTail.next;
-      pendingNextPutDeferreds.forEach(deferred => deferred.resolve());
+      sharedNextEventDeferred.resolve();
+      sharedNextEventDeferred = new Deferred();
     },
 
     close(): void {
-      isChannelClosed = true;
-      pendingNextPutDeferreds.forEach(deferred => deferred.resolve());
+      channelState = ChannelInternalState.CLOSED;
+      sharedNextEventDeferred.resolve();
+      sharedNextEventDeferred = new Deferred();
     },
 
     error(errValue: unknown): void {
-      isChannelClosed = true;
-      pendingNextPutDeferreds.forEach(deferred => deferred.reject(errValue));
-    },
-
-    get isClosed() {
-      return isChannelClosed;
+      channelState = ChannelInternalState.ERROR;
+      channelErrorValue = errValue;
+      sharedNextEventDeferred.resolve();
+      sharedNextEventDeferred = new Deferred();
     },
 
     [Symbol.asyncIterator](): MulticastChannelIterator<T> {
-      let isIteratorClosed = false;
+      const ownNextEventDeferred = new Deferred<void>();
       let listHead = listTail;
+      let isIteratorClosed = false;
 
-      const thisIterator = {
+      return {
         [Symbol.asyncIterator]() {
           return this;
         },
 
         return() {
           isIteratorClosed = true;
-          pendingNextPutDeferreds.get(thisIterator)?.resolve();
-          return { done: true as const, value: undefined };
+          ownNextEventDeferred.resolve();
+          return { done: true, value: undefined };
         },
 
-        next: makeCallableOnceAtATime(async () => {
+        async next() {
           if (isIteratorClosed) {
-            return { done: true as const, value: undefined };
+            return { done: true, value: undefined };
           }
 
-          if (listHead !== listTail) {
-            listHead = listHead.next!;
-            return { done: false as const, value: listHead.item };
+          if (listHead.next) {
+            listHead = listHead.next;
+            return { done: false, value: listHead.item };
           }
 
-          if (isChannelClosed) {
-            return { done: true as const, value: undefined };
+          if (channelState === ChannelInternalState.CLOSED) {
+            return { done: true, value: undefined };
           }
 
-          try {
-            const deferred = createDeferred();
-            pendingNextPutDeferreds.set(thisIterator, deferred);
-            await deferred.promise;
-          } finally {
-            pendingNextPutDeferreds.delete(thisIterator);
+          if (channelState === ChannelInternalState.ERROR) {
+            throw channelErrorValue;
           }
 
-          if (listHead !== listTail) {
-            listHead = listHead.next!;
-            return { done: false as const, value: listHead.item };
-          }
+          await Promise.race([
+            ownNextEventDeferred.promise,
+            sharedNextEventDeferred.promise,
+          ]);
 
-          return { done: true as const, value: undefined };
-        }),
+          return this.next();
+        },
       };
-
-      return thisIterator;
     },
   };
 }
@@ -101,7 +100,13 @@ type MulticastChannelIterator<T> = {
   [Symbol.asyncIterator](): MulticastChannelIterator<T>;
 };
 
-type QueuedItemNode<T> = {
+type LinkedListNode<T> = {
   item: T;
-  next: QueuedItemNode<T> | undefined;
+  next: LinkedListNode<T> | undefined;
 };
+
+enum ChannelInternalState {
+  ACTIVE,
+  CLOSED,
+  ERROR,
+}

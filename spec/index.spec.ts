@@ -141,6 +141,7 @@ it('when pulling one or move values out of iterators before they any were yet ge
   ]);
 });
 
+// TODO: For next major - change this test (and respective internal logic) to expect *synchronous* exceptions thrown from executor to propagate up to ALL actively consuming iterators instead of only to the first one to consume it
 it('*synchronous* exception thrown from executor function propagates up only to the first iterator consuming it', async () => {
   const iterable = iterified(() => {
     throw new Error('oops...');
@@ -408,8 +409,8 @@ it('when the iterable gets errored through the executor function, the "erroring"
   const it2 = iterable[Symbol.asyncIterator]();
 
   const [, , errorPromise1, errorPromise2] = [
-    it1.next().catch(),
-    it2.next().catch(),
+    it1.next(),
+    it2.next(),
     it1.next().catch(() => {}),
     it2.next().catch(() => {}),
   ];

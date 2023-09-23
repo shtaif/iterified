@@ -1,5 +1,5 @@
+import { createMulticastChannel } from './utils/createMulticastChannel';
 import { type MaybePromise } from './utils/types/MaybePromise';
-import { MulticastChannel, createMulticastChannel } from './utils/createMulticastChannel';
 
 export {
   iterified,
@@ -11,95 +11,104 @@ export {
 };
 
 function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNext> {
-  let channel: MulticastChannel<TNext> | undefined;
-  let suspendFurtherPushes = false;
+  let channel = createMulticastChannel<TNext>();
   let activeIteratorCount = 0;
-  let possiblyReturnedCleanupFnPromise: ReturnType<ExecutorFn<TNext>>;
+  let executorPossiblyReturnedTeardown: ReturnType<ExecutorFn<TNext>>;
+  let teardownInProgressPromise: Promise<void> | undefined;
+
+  function executorPushCb(nextValue: TNext): void {
+    if (!teardownInProgressPromise) {
+      channel.put(nextValue);
+    }
+  }
+
+  function executorDoneCb(): void {
+    if (!teardownInProgressPromise) {
+      channel.close();
+    }
+  }
+
+  function executorErrorCb(error?: unknown): void {
+    if (!teardownInProgressPromise) {
+      channel.error(error);
+    }
+  }
 
   return {
     [Symbol.asyncIterator]() {
-      if (!channel) {
-        channel = createMulticastChannel<TNext>();
-        suspendFurtherPushes = false;
-      }
-
       const channelIterator = channel[Symbol.asyncIterator]();
 
       const gen = (async function* () {
-        if (++activeIteratorCount === 1) {
-          try {
-            possiblyReturnedCleanupFnPromise = executorFn(pushCb, doneCb, errorCb);
-          } catch (err) {
-            channel.close();
-            throw err;
-          }
-          if (possiblyReturnedCleanupFnPromise instanceof Promise) {
-            possiblyReturnedCleanupFnPromise.catch(err => closeIterable(true, err));
-          }
-        }
         try {
-          for await (const value of channelIterator) {
-            yield value;
+          if (++activeIteratorCount === 1) {
+            const initialNextPromise = channelIterator.next();
+
+            try {
+              executorPossiblyReturnedTeardown = executorFn(
+                executorPushCb,
+                executorDoneCb,
+                executorErrorCb
+              );
+            } catch (err) {
+              // TODO: For next major - remove this whole `catch` block with its operations in order to make *synchronous* exceptions thrown from executor to propagate up to ALL actively consuming iterators instead of only to the first one to consume it like it currently works
+              channel.close();
+              await channelIterator.return();
+              throw err;
+            }
+
+            (async () => {
+              try {
+                await executorPossiblyReturnedTeardown;
+              } catch (err) {
+                channel.error(err);
+              }
+            })();
+
+            const initialNext = await initialNextPromise;
+            if (initialNext.done) {
+              return;
+            }
+            yield initialNext.value;
           }
+
+          yield* channelIterator;
         } finally {
-          if (--activeIteratorCount === 0) {
-            await closeIterable();
+          activeIteratorCount--;
+
+          if (
+            !teardownInProgressPromise &&
+            (channel.isClosed || activeIteratorCount === 0)
+          ) {
+            teardownInProgressPromise = (async () => {
+              try {
+                const possibleTeardownFn = await executorPossiblyReturnedTeardown; // TODO: Do I need to try to speed this up by adding some conditioning in here?...
+                await possibleTeardownFn?.();
+              } finally {
+                channel = createMulticastChannel();
+                teardownInProgressPromise = undefined;
+              }
+            })();
+          }
+
+          if (teardownInProgressPromise) {
+            await teardownInProgressPromise;
           }
         }
       })();
 
-      const originalGenReturn = gen.return;
-
       return Object.assign(gen, {
-        async return() {
-          await channelIterator.return();
-          await originalGenReturn.call(gen);
-          return { done: true as const, value: undefined };
-        },
+        return: (() => {
+          const originalGenReturn = gen.return;
+
+          return async function () {
+            await channelIterator.return();
+            await originalGenReturn.call(gen);
+            return { done: true as const, value: undefined };
+          };
+        })(),
       });
     },
   };
-
-  function pushCb(nextValue: TNext): void {
-    channel?.put(nextValue);
-  }
-
-  function doneCb(/*returnValue: TDone*/): void {
-    closeIterable();
-  }
-
-  function errorCb(error?: unknown): void {
-    closeIterable(true, error);
-  }
-
-  async function closeIterable(
-    withError: boolean = false,
-    errorValue: unknown = undefined
-  ) {
-    if (suspendFurtherPushes) {
-      return;
-    }
-    suspendFurtherPushes = true;
-    try {
-      try {
-        await undefined; // TODO: Explain this...
-        const possibleCleanupFn = await possiblyReturnedCleanupFnPromise; // TODO: Do I need to try to speed this up by adding some conditioning in here?...
-        if (possibleCleanupFn) {
-          await possibleCleanupFn();
-        }
-      } catch (err) {
-        channel?.error(err);
-        throw err;
-      }
-      if (withError) {
-        channel?.error(errorValue);
-      } else {
-        channel?.close();
-      }
-    } finally {
-      channel = undefined;
-    }
-  }
 }
 
 type IterifiedIterable<TNextValue, TDoneValue = undefined | void> = {
@@ -121,9 +130,9 @@ type IterifiedIterator<TNextValue, TDoneValue = undefined | void> = {
 };
 
 type ExecutorFn<TNext> = (
-  nextCb: (nextValue: TNext) => void,
-  doneCb: () => void,
-  errorCb: (error: unknown) => void
+  next: (nextValue: TNext) => void,
+  done: () => void,
+  error: (error: unknown) => void
 ) => MaybePromise<void | TeardownFn>;
 
 /**
