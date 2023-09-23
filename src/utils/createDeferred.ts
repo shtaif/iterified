@@ -1,4 +1,4 @@
-export { createDeferred as default, Deferred };
+export { createDeferred, Deferred };
 
 function createDeferred<T = void | undefined>(): Deferred<T> {
   return new Deferred<T>();
