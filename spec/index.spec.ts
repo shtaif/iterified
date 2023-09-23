@@ -117,7 +117,7 @@ it('iterators from the same iterable obtained at different points in time will p
   ]).toStrictEqual([[1, 2, 3, 4, 5, 6], [3, 4, 5, 6], [5, 6], []]);
 });
 
-it('when pulling one or move values out of iterators before they any were yet generated, the returned pending promises will resolve one by one in the order they were pulled as each consequent value becomes available', async () => {
+it('when pulling one or move values out of iterators before they any were yet generated, the returned pending promises will resolve one by one in the order they were pulled as each consecutive value becomes available', async () => {
   const { iterable, next } = iterifiedUnwrapped<string>();
 
   const iterator = iterable[Symbol.asyncIterator]();
@@ -204,7 +204,7 @@ it('error generated *asynchronously* from within executor function propagates up
   await expect(it2ItemPromise).rejects.toMatchObject({ message: 'oops...' });
 });
 
-it('consequent pulls from iterable that was ended will always return a "done" result', async () => {
+it('consecutive pulls from iterable that was ended will always return a "done" result', async () => {
   const iter = iterified((_, done) => {
     done();
   })[Symbol.asyncIterator]();
@@ -219,7 +219,7 @@ it('consequent pulls from iterable that was ended will always return a "done" re
   ]);
 });
 
-it('consequent pulls from iterable that had errored will always return a "done" result', async () => {
+it('consecutive pulls from iterable that had errored will always return a "done" result', async () => {
   const it = iterified((_, __, error) => {
     error(new Error('oops...'));
   })[Symbol.asyncIterator]();
@@ -423,7 +423,7 @@ it('when the iterable gets errored through the executor function, the "erroring"
   expect(promiseResolvedFirst).toBe(spiedCleanupFnFinishedPromise);
 });
 
-it('an iterified iterable can be reconsumed again after previously ended/got closed, reinvoking cleanup and executor functions respectively every time', async () => {
+it('an iterified iterable can be reconsumed again after previously ended/got closed, each time reinvoking the executor and cleanup functions again', async () => {
   const spiedExecutorFn = sinon.spy<ExecutorFn<number>>((next, done) => {
     next(1);
     next(2);
@@ -465,7 +465,7 @@ it('an iterified iterable can be reconsumed again after previously ended/got clo
   ]).toStrictEqual([1, 2, 3]);
 });
 
-it('an iterified iterable can be reconsumed again after previously errored, reinvoking cleanup and executor functions respectively every time', async () => {
+it('an iterified iterable can be reconsumed again after previously errored, each time reinvoking the executor and cleanup functions again', async () => {
   const spiedExecutorFn = sinon.spy<ExecutorFn<number>>((_, __, error) => {
     error(new Error('Oh no!'));
     return spiedCleanupFn;
