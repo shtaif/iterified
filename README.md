@@ -2,6 +2,8 @@
 
 > Convert any callback-based sequence of values into a full-fledged async iterable
 
+<br />
+
 <p>
   <a href="https://github.com/shtaif/iterified/actions/workflows/ci-tests.yaml">
     <img alt="" src="https://github.com/shtaif/iterified/actions/workflows/ci-tests.yaml/badge.svg" />
@@ -16,7 +18,7 @@
 
 `iterified` converts any callback-style sequence of zero or more values into an async iterable equivalent. This lets you take advantage of all the language features and semantics of async iterables, such as playing well with `async`-`await` and `for await...of` looping, streamlined error handling with `try-catch` and encapsulatation of resource clean up - for any kind of an asynchronous value stream.
 
-By being able to express any thing as an async iterable, it can further be supercharged using the growing number of available iterable utilities, such as [iter-tools](https://github.com/iter-tools/iter-tools), [IxJS](https://github.com/ReactiveX/IxJS) and many more.
+By being able to express any thing as an async iterable, it can further be supercharged using the growing number of available iterable utilities, such as [iter-tools](https://github.com/iter-tools/iter-tools), [IxJS](https://github.com/ReactiveX/IxJS), [iter-ops](https://github.com/vitaly-t/iter-ops) and some more.
 
 This concept of interface resembles and is inspired by the [native `Promise` constructor](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise) syntax, as well as [RxJS's plain `Observable` constructor](https://rxjs.dev/guide/observable).
 
@@ -326,11 +328,11 @@ The user-provided _executor function_ is invoked with the following arguments:
 
 - `next(value)` - makes the iterable yield `value` to all consuming iterators
 - `done()` - makes the iterable end, closing all consuming iterators
-- `error(e)` - makes the iterable error out with `e` and end, propagating the error to every consuming iterator
+- `error(e)` - makes the iterable error out with given `e` and end, propagating the error to every consuming iterator
 
-In addition, the _executor function_ may __optionally__ return a teardown function for disposing of any state and opened resources that have been used during execution.
+In addition, the _executor function_ may __optionally__ return a teardown function for disposing of any state and open resources that have been used during execution.
 
-The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off of the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before closing off the `iterified` iterable. This cycle would __repeat__ as soon as the `iterified` iterable gets reconsumed from this state again.
+The _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off of the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before finally closing off the `iterified` iterable. This life cycle __repeats__ from the begining every time the `iterified` iterable gets reconsumed again.
 
 ```ts
 import { iterified } from 'iterified';
