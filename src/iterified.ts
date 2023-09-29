@@ -10,13 +10,58 @@ export {
   type IterifiedIterator,
 };
 
-function iterified<TNext>(executorFn: ExecutorFn<TNext>): IterifiedIterable<TNext> {
-  let channel = createMulticastChannel<TNext>();
+/**
+ * Creates an `iterified` async iterable, yielding each value as it gets emitted from the user-provided `executorFn`.
+ *
+ * The given _executor function_ will be _"lazily"_ executed only upon pulling the first value from any iterator (or [`for await...of`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of) loop) of the `iterified` iterable. Any additional iterators obtained from that point on would all feed off of the same shared execution of the _executor function_ - every value it yields will be distributed ("multicast") down to each active iterator, picking up from the time it was obtained. When the iterable is ended either by the producer (_executor function_ calls `done()` or `error(e)`) or the consumer (last active iterator is closed) - it would trigger an optionally-given teardown function before finally closing off the `iterified` iterable. This life cycle __repeats__ from the begining every time the `iterified` iterable gets reconsumed again.
+ *
+ * @param executorFn - a user-provided _executor function_ (see {@link ExecutorFn}) that controls the values to emit through the `iterified` iterable, closing it or erroring out, and provides logic for teardown.
+ *
+ * @returns an `iterified` async iterable
+ *
+ * @see {@link ExecutorFn}, {@link IterifiedIterable}
+ *
+ * @example
+  ```ts
+  import { iterified } from 'iterified';
+
+  // Iterable that emits "my_value" and ends immediately:
+  const iterable = iterified<string>((next, done, error) => {
+    next('my_value');
+    done();
+  });
+  ```
+ *
+ * @example
+  ```ts
+  import { iterified } from 'iterified';
+
+  function webSocketIterable(url: string) {
+    return iterified<string>((next, done, error) => {
+      const ws = new WebSocket(url);
+
+      ws.addEventListener('close', ev => done());
+      ws.addEventListener('error', ev => error(ev));
+      ws.addEventListener('message', ev => next(ev.data));
+      
+      return () => ws.close(); // <-- Ensures the web socket will properly close on any event our iterable gets disposed
+    });
+  }
+  
+  (async () => {
+    for await (const msg of webSocketIterable('ws://localhost:8080')) {
+      console.log(msg);
+    }
+  })();
+  ```
+ */
+function iterified<T>(executorFn: ExecutorFn<T>): IterifiedIterable<T> {
+  let channel = createMulticastChannel<T>();
   let activeIteratorCount = 0;
-  let executorPossiblyReturnedTeardown: ReturnType<ExecutorFn<TNext>>;
+  let executorPossiblyReturnedTeardown: ReturnType<ExecutorFn<T>>;
   let teardownInProgressPromise: Promise<void> | undefined;
 
-  function executorPushCb(nextValue: TNext): void {
+  function executorPushCb(nextValue: T): void {
     if (!teardownInProgressPromise) {
       channel.put(nextValue);
     }
@@ -129,6 +174,19 @@ type IterifiedIterator<TNextValue, TDoneValue = undefined | void> = {
   return(): Promise<IteratorReturnResult<TDoneValue>>;
 };
 
+/**
+ * A function that expresses the values to emit through an `iterified` iterable and encapsulates any logic and resource management that should be involved in generating them.
+ *
+ * The _executor function_ is invoked with the following arguments:
+ *
+ * - `next(value)` - makes the iterable yield `value` to all consuming iterators
+ * - `done()` - makes the iterable end, closing all consuming iterators
+ * - `error(e)` - makes the iterable error out with given `e` and end, propagating the error to every consuming iterator
+ *
+ * In addition, the _executor function_ may __optionally__ return a teardown function for disposing of any state and open resources that have been used during execution.
+ *
+ * @see {@link TeardownFn}
+ */
 type ExecutorFn<TNext> = (
   next: (nextValue: TNext) => void,
   done: () => void,
