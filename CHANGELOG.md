@@ -1,3 +1,21 @@
+## [1.2.4](https://github.com/shtaif/iterified/compare/v1.2.3...v1.2.4) (2023-09-29)
+
+
+### Refactor
+
+* internal code refactoring to simplify and untangle a bit the processes that happen across mainly `createMulticastChannel.ts` and `iterified.ts` ([#43](https://github.com/shtaif/iterified/issues/43)) ([cc8f333](https://github.com/shtaif/iterified/commit/cc8f333601c73928a4e5e254fef38522294785d8))
+
+
+### Tests
+
+* edit test titles' wording ([#42](https://github.com/shtaif/iterified/issues/42)) ([d636e3a](https://github.com/shtaif/iterified/commit/d636e3a66798872d0c2acd06fe784c326df4c89e))
+
+
+### Documentation
+
+* edit and add some more JSDocs ([#46](https://github.com/shtaif/iterified/issues/46)) ([a7141ec](https://github.com/shtaif/iterified/commit/a7141ec5b9afe4343273d8d3c075744b2c9f6d91))
+* small assorted edits across `README.md` ([#45](https://github.com/shtaif/iterified/issues/45)) ([ec15cde](https://github.com/shtaif/iterified/commit/ec15cdebf5aeece7c1eb471b0c0c22e26f0020f1))
+
 ## [1.2.3](https://github.com/shtaif/iterified/compare/v1.2.2...v1.2.3) (2023-09-18)
 
 
