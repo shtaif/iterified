@@ -66,11 +66,11 @@ function createMulticastChannel<T>(): MulticastChannel<T> {
             return { done: false, value: listHead.item };
           }
 
-          if (channelState === ChannelInternalState.CLOSED) {
-            return { done: true, value: undefined };
-          }
-
-          if (channelState === ChannelInternalState.ERROR) {
+          if (channelState !== ChannelInternalState.ACTIVE) {
+            isIteratorClosed = true;
+            if (channelState === ChannelInternalState.CLOSED) {
+              return { done: true, value: undefined };
+            }
             throw channelErrorValue;
           }
 
