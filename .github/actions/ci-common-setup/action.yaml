@@ -22,7 +22,7 @@ runs:
       shell: bash
 
     - name: Install pnpm
-      run: npm install -g pnpm
+      run: npm install -g pnpm@^8
       shell: bash
 
     - name: Restore possibly cached dependencies
