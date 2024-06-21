@@ -1,4 +1,6 @@
 spec: ./spec/**/*.spec.ts
+file:
+  - ./spec/testsGlobalSetup.ts
 watch-files:
   - ./src/**/*.ts
   - ./spec/**/*.ts

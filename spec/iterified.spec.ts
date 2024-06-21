@@ -1,11 +1,11 @@
 import 'mocha';
 import expect from 'expect';
 import * as sinon from 'sinon';
-import { iterified, type ExecutorFn } from '../src';
-import nextTick from './utils/nextTick';
-import getPromiseState from './utils/getPromiseState';
-import collectAsyncIterable from './utils/collectAsyncIterable';
-import sortPromisesByResolutionOrder from './utils/sortPromisesByResolutionOrder';
+import { iterified, type ExecutorFn } from '../src/index.js';
+import nextTick from './utils/nextTick.js';
+import getPromiseState from './utils/getPromiseState.js';
+import collectAsyncIterable from './utils/collectAsyncIterable.js';
+import sortPromisesByResolutionOrder from './utils/sortPromisesByResolutionOrder.js';
 
 describe('`iterified` function', () => {
   it('generating a single value and consuming via multiple iterators', async () => {

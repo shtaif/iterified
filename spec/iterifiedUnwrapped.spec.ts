@@ -1,8 +1,8 @@
 import 'mocha';
 import expect from 'expect';
-import { iterifiedUnwrapped } from '../src';
-import getPromiseState from './utils/getPromiseState';
-import collectAsyncIterable from './utils/collectAsyncIterable';
+import { iterifiedUnwrapped } from '../src/index.js';
+import getPromiseState from './utils/getPromiseState.js';
+import collectAsyncIterable from './utils/collectAsyncIterable.js';
 
 describe('`iterifiedUnwrapped` function', () => {
   it('generating a single value and consuming via multiple iterators', async () => {

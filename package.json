@@ -29,6 +29,7 @@
     "typescript",
     "esm"
   ],
+  "type": "commonjs",
   "engines": {
     "node": ">=10.21.0"
   },
@@ -46,8 +47,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "ts-mocha -p ./tsconfig-cjs.json",
-    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node ./scripts/set-module-type-in-dist-builds.ts",
+    "test": "ts-mocha -p ./spec/tsconfig-tests.json",
+    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node -p tsconfig-esm.json ./scripts/set-module-type-in-dist-builds.ts",
     "check-typings": "tsc --noEmit -p ./tsconfig-esm.json",
     "prepublishOnly": "npm run build"
   },
@@ -61,7 +62,7 @@
     "eslint-config-prettier": "^8.9.0",
     "eslint-config-standard": "^17.1.0",
     "expect": "^29.6.2",
-    "mocha": "^10.2.0",
+    "mocha": "^10.4.0",
     "prettier": "^3.0.2",
     "rimraf": "^5.0.1",
     "sinon": "^15.2.0",

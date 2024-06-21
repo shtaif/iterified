@@ -1,5 +1,5 @@
-import { type IterifiedIterable } from './iterified';
-import { createMulticastChannel } from './utils/createMulticastChannel';
+import { type IterifiedIterable } from './iterified.js';
+import { createMulticastChannel } from './utils/createMulticastChannel.js';
 
 export { iterifiedUnwrapped, type IterifiedUnwrapped };
 
