@@ -1,3 +1,20 @@
+## [1.2.5](https://github.com/shtaif/iterified/compare/v1.2.4...v1.2.5) (2024-06-22)
+
+
+### Bug Fixes
+
+* fix ESM build to contain `import` statements with full file extensions ([#49](https://github.com/shtaif/iterified/issues/49)) ([2aad91d](https://github.com/shtaif/iterified/commit/2aad91daa155a8ff50ea3cd08e73caed1d4c5e3e))
+
+
+### Refactor
+
+* internal logic fix in the multicast channel code (no public behavior impact) - ensure to mark a channel's iterator as closed for further pull attempts as soon as it realizes its parent channel itself had already ended/errored out ([#47](https://github.com/shtaif/iterified/issues/47)) ([d11a74b](https://github.com/shtaif/iterified/commit/d11a74b738aeccbbfdfb41c42071507d60be4e67))
+
+
+### Tests
+
+* split the single current test file into two - one having all the tests relevant only for the `iterified` function and the other all the tests relevant only for `iterifiedUnwrapped` ([#48](https://github.com/shtaif/iterified/issues/48)) ([815d357](https://github.com/shtaif/iterified/commit/815d357090ddea566c5194acd3aa627311b8ac39))
+
 ## [1.2.4](https://github.com/shtaif/iterified/compare/v1.2.3...v1.2.4) (2023-09-29)
 
 
