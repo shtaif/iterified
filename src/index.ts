@@ -5,8 +5,8 @@ import {
   type ExecutorFn,
   type TeardownFn,
   type Iterified,
-} from './iterified';
-import { iterifiedUnwrapped, type IterifiedUnwrapped } from './iterifiedUnwrapped';
+} from './iterified.js';
+import { iterifiedUnwrapped, type IterifiedUnwrapped } from './iterifiedUnwrapped.js';
 
 export {
   iterified,

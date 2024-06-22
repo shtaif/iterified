@@ -1,5 +1,5 @@
-import { createMulticastChannel } from './utils/createMulticastChannel';
-import { type MaybePromise } from './utils/types/MaybePromise';
+import { createMulticastChannel } from './utils/createMulticastChannel.js';
+import { type MaybePromise } from './utils/types/MaybePromise.js';
 
 export {
   iterified,

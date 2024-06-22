@@ -1,9 +1,10 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "files": ["./src/index.ts"],
+  "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "outDir": "./dist/esm",
-    "module": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "es2019",
     "strict": true,
     "noImplicitAny": true,

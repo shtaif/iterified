@@ -1,5 +1,5 @@
-import { Deferred } from './createDeferred';
-import { type MaybePromise } from './types/MaybePromise';
+import { Deferred } from './createDeferred.js';
+import { type MaybePromise } from './types/MaybePromise.js';
 
 export { createMulticastChannel, type MulticastChannel, type MulticastChannelIterator };
 
