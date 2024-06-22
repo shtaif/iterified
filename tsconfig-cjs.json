@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "include": ["./src/**/*.ts"],
-  "extends": "./tsconfig-esm.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist/cjs",
     "module": "CommonJS",

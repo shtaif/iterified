@@ -48,8 +48,8 @@
   ],
   "scripts": {
     "test": "ts-mocha -p ./spec/tsconfig-tests.json",
-    "build": "rimraf ./dist && tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && ts-node -p tsconfig-esm.json ./scripts/set-module-type-in-dist-builds.ts",
-    "check-typings": "tsc --noEmit -p ./tsconfig-esm.json",
+    "build": "rimraf ./dist && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && ts-node -p tsconfig.json ./scripts/set-module-type-in-dist-builds.ts",
+    "check-typings": "tsc --noEmit -p ./tsconfig.json",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
